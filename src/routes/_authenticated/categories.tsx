@@ -3,6 +3,7 @@ import { useCategories } from '@/features/categories/useCategories';
 import { useState } from 'react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { Plus, Trash2, Tags, TrendingUp, TrendingDown } from 'lucide-react';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
 export const Route = createFileRoute('/_authenticated/categories')({
   component: CategoriesRoute,
@@ -13,6 +14,7 @@ function CategoriesRoute() {
   const { data: categories, isLoading, createCategory, deleteCategory, isCreating } = useCategories();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [type, setType] = useState<'income' | 'expense'>('expense');
 
@@ -131,9 +133,7 @@ function CategoriesRoute() {
                     <span className="font-bold text-zinc-700 dark:text-zinc-200">{c.name}</span>
                     {c.user_id ? (
                       <button
-                        onClick={() => {
-                          if(confirm('Xóa danh mục này? 🗑️')) deleteCategory(c.id);
-                        }}
+                        onClick={() => setDeleteId(c.id)}
                         className="p-1.5 ml-1 text-zinc-400 hover:text-white hover:bg-rose-500 rounded-full opacity-0 group-hover:opacity-100 transition-all"
                         title="Xóa danh mục"
                       >
@@ -166,9 +166,7 @@ function CategoriesRoute() {
                     <span className="font-bold text-zinc-700 dark:text-zinc-200">{c.name}</span>
                     {c.user_id ? (
                       <button
-                        onClick={() => {
-                          if(confirm('Xóa danh mục này? 🗑️')) deleteCategory(c.id);
-                        }}
+                        onClick={() => setDeleteId(c.id)}
                         className="p-1.5 ml-1 text-zinc-400 hover:text-white hover:bg-emerald-500 rounded-full opacity-0 group-hover:opacity-100 transition-all"
                         title="Xóa danh mục"
                       >
@@ -184,6 +182,16 @@ function CategoriesRoute() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={!!deleteId}
+        title="Xóa danh mục này?"
+        message="Dữ liệu sau khi xóa sẽ không thể khôi phục lại được đâu nhé!"
+        onConfirm={() => {
+          if (deleteId) deleteCategory(deleteId);
+        }}
+        onCancel={() => setDeleteId(null)}
+      />
     </div>
   );
 }

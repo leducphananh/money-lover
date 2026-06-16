@@ -125,8 +125,13 @@ function Dashboard() {
             <YAxis
               axisLine={false}
               tickLine={false}
+              width={60}
               tick={{ fill: '#71717a', fontWeight: 'bold' }}
-              tickFormatter={(value) => `${value.toLocaleString('vi-VN')} ₫`}
+              tickFormatter={(value) => {
+                if (value >= 1000000) return `${value / 1000000} Tr`;
+                if (value >= 1000) return `${value / 1000} K`;
+                return value.toString();
+              }}
               dx={-10}
             />
             <Tooltip

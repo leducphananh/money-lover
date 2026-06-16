@@ -109,7 +109,7 @@ export function AppLayout() {
         </header>
 
         {/* Topbar for Desktop (Just for ThemeToggle basically) */}
-        <div className="hidden md:flex justify-end p-4 absolute top-0 right-0 z-50">
+        <div className="hidden md:flex justify-end p-4 absolute top-0 right-0 z-20">
           <ThemeToggle />
         </div>
 

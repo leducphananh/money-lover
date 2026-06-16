@@ -5,6 +5,8 @@ import { useState } from 'react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { Plus, Trash2, ArrowUpRight, ArrowDownRight, Frown } from 'lucide-react';
 
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
+
 export const Route = createFileRoute('/_authenticated/transactions')({
   component: TransactionsRoute,
 });
@@ -16,6 +18,7 @@ function TransactionsRoute() {
   const { createTransaction, isCreating } = useTransactions();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [amount, setAmount] = useState('');
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [categoryId, setCategoryId] = useState('');
@@ -200,11 +203,7 @@ function TransactionsRoute() {
                     {t.type === 'income' ? '+' : '-'}{formatCurrency(t.amount)}
                   </div>
                   <button
-                    onClick={() => {
-                      if(confirm('Bạn có chắc chắn muốn xóa giao dịch này? 🗑️')) {
-                        deleteTransaction(t.id);
-                      }
-                    }}
+                    onClick={() => setDeleteId(t.id)}
                     className="p-3 text-zinc-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all"
                     title="Xóa giao dịch"
                   >
@@ -216,6 +215,16 @@ function TransactionsRoute() {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={!!deleteId}
+        title="Xóa giao dịch này?"
+        message="Dữ liệu sau khi xóa sẽ không thể khôi phục lại được đâu nhé!"
+        onConfirm={() => {
+          if (deleteId) deleteTransaction(deleteId);
+        }}
+        onCancel={() => setDeleteId(null)}
+      />
     </div>
   );
 }
