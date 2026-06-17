@@ -20,10 +20,14 @@ export default function Dashboard() {
   };
 
   const chartData = [
-    { name: 'Thu nhập', amount: stats?.income || 0, fill: 'url(#colorIncome)' },
+    {
+      name: 'Thu nhập',
+      'số tiền': stats?.income || 0,
+      fill: 'url(#colorIncome)',
+    },
     {
       name: 'Chi tiêu',
-      amount: stats?.expense || 0,
+      'số tiền': stats?.expense || 0,
       fill: 'url(#colorExpense)',
     },
   ];
@@ -143,7 +147,7 @@ export default function Dashboard() {
               formatter={(value: any) => formatCurrency(Number(value))}
             />
             <Bar
-              dataKey="amount"
+              dataKey="số tiền"
               radius={[8, 8, 8, 8]}
               maxBarSize={80}
               animationDuration={1500}

@@ -8,8 +8,9 @@ import {
   Frown,
   Plus,
   Trash2,
+  Pencil,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
@@ -22,10 +23,11 @@ export default function Transactions() {
     deleteTransaction,
   } = useTransactions();
   const { data: categories } = useCategories();
-  const { createTransaction, isCreating } = useTransactions();
+  const { createTransaction, updateTransaction, isCreating, isUpdating } = useTransactions();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [amount, setAmount] = useState('');
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [categoryId, setCategoryId] = useState('');
@@ -43,21 +45,62 @@ export default function Transactions() {
     e.preventDefault();
     if (!user || !amount || !categoryId || !date) return;
 
-    await createTransaction({
-      user_id: user.id,
-      amount: parseFloat(amount),
-      type,
-      category_id: categoryId,
-      date,
-      notes,
-    });
+    if (editingId) {
+      await updateTransaction({
+        id: editingId,
+        updates: {
+          amount: parseFloat(amount),
+          type,
+          category_id: categoryId,
+          date,
+          notes,
+        },
+      });
+    } else {
+      await createTransaction({
+        user_id: user.id,
+        amount: parseFloat(amount),
+        type,
+        category_id: categoryId,
+        date,
+        notes,
+      });
+    }
 
     setIsFormOpen(false);
+    setEditingId(null);
+    setAmount('');
+    setNotes('');
+  };
+
+  const openEditForm = (transaction: any) => {
+    setEditingId(transaction.id);
+    setAmount(transaction.amount.toString());
+    setType(transaction.type);
+    setCategoryId(transaction.category_id);
+    setDate(new Date(transaction.date).toISOString().split('T')[0]);
+    setNotes(transaction.notes || '');
+    setIsFormOpen(true);
+  };
+
+  const closeForm = () => {
+    setIsFormOpen(false);
+    setEditingId(null);
     setAmount('');
     setNotes('');
   };
 
   const filteredCategories = categories?.filter((c) => c.type === type) || [];
+
+  // Reset category selection when changing type if the current category is not of the new type
+  useEffect(() => {
+    if (categoryId) {
+      const selectedCat = categories?.find((c) => c.id === categoryId);
+      if (selectedCat && selectedCat.type !== type) {
+        setCategoryId('');
+      }
+    }
+  }, [type, categories, categoryId]);
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -71,7 +114,17 @@ export default function Transactions() {
           </p>
         </div>
         <button
-          onClick={() => setIsFormOpen(!isFormOpen)}
+          onClick={() => {
+            if (isFormOpen) {
+              closeForm();
+            } else {
+              setIsFormOpen(true);
+              setEditingId(null);
+              setAmount('');
+              setNotes('');
+              setDate(new Date().toISOString().split('T')[0]);
+            }
+          }}
           className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-violet-500/30 hover:shadow-violet-500/50 hover:-translate-y-1 active:translate-y-0 transition-all duration-300"
         >
           <Plus
@@ -84,7 +137,7 @@ export default function Transactions() {
       {isFormOpen && (
         <div className="rounded-[2rem] border border-white/50 dark:border-zinc-800/50 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl p-8 shadow-xl animate-in zoom-in-95 duration-300">
           <h2 className="text-2xl font-extrabold mb-6 text-zinc-900 dark:text-zinc-100 bg-clip-text text-transparent bg-gradient-to-r from-violet-500 to-fuchsia-500 w-fit">
-            Thêm giao dịch mới ✨
+            {editingId ? 'Chỉnh sửa giao dịch ✏️' : 'Thêm giao dịch mới ✨'}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -183,17 +236,17 @@ export default function Transactions() {
             <div className="flex justify-end gap-4 mt-6 pt-4">
               <button
                 type="button"
-                onClick={() => setIsFormOpen(false)}
+                onClick={closeForm}
                 className="px-6 py-3 text-sm font-bold text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-2xl transition-all"
               >
                 Hủy
               </button>
               <button
                 type="submit"
-                disabled={isCreating}
+                disabled={isCreating || isUpdating}
                 className="px-6 py-3 text-sm font-bold text-white bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:shadow-lg hover:shadow-violet-500/30 hover:-translate-y-1 active:translate-y-0 rounded-2xl disabled:opacity-50 transition-all"
               >
-                {isCreating ? 'Đang lưu...' : 'Lưu giao dịch 🚀'}
+                {isCreating || isUpdating ? 'Đang lưu...' : (editingId ? 'Cập nhật 🚀' : 'Lưu giao dịch 🚀')}
               </button>
             </div>
           </form>
@@ -257,20 +310,31 @@ export default function Transactions() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-6 sm:w-auto w-full">
+                <div className="flex items-center justify-between sm:justify-end gap-4 sm:w-auto w-full">
                   <div
                     className={`font-black text-xl ${t.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}`}
                   >
                     {t.type === 'income' ? '+' : '-'}
                     {formatCurrency(t.amount)}
                   </div>
-                  <button
-                    onClick={() => setDeleteId(t.id)}
-                    className="p-3 text-zinc-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all"
-                    title="Xóa giao dịch"
-                  >
-                    <Trash2 className="h-5 w-5" />
-                  </button>
+                  {t.user_id && (
+                    <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all">
+                      <button
+                        onClick={() => openEditForm(t)}
+                        className="p-3 text-zinc-300 hover:text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/30 rounded-xl transition-all"
+                        title="Sửa giao dịch"
+                      >
+                        <Pencil className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteId(t.id)}
+                        className="p-3 text-zinc-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-all"
+                        title="Xóa giao dịch"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

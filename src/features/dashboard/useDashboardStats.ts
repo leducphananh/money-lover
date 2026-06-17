@@ -1,19 +1,26 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/features/auth/AuthContext';
+import { useFamilyContext } from '@/features/families/FamilyContext';
+import { supabase } from '@/lib/supabase';
+import { useQuery } from '@tanstack/react-query';
 
 export function useDashboardStats() {
   const { user } = useAuth();
+  const { activeFamilyId } = useFamilyContext();
 
   return useQuery({
-    queryKey: ['dashboardStats', user?.id],
+    queryKey: ['dashboardStats', user?.id, activeFamilyId],
     queryFn: async () => {
       if (!user) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase
-        .from('transactions')
-        .select('amount, type')
-        .eq('user_id', user.id);
+      let query = supabase.from('transactions').select('amount, type');
+
+      if (activeFamilyId) {
+        query = query.eq('family_id', activeFamilyId);
+      } else {
+        query = query.eq('user_id', user.id).is('family_id', null);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -28,7 +35,7 @@ export function useDashboardStats() {
           }
           return acc;
         },
-        { balance: 0, income: 0, expense: 0 }
+        { balance: 0, income: 0, expense: 0 },
       );
 
       return stats;

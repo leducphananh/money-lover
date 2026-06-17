@@ -1,7 +1,7 @@
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useCategories } from '@/features/categories/useCategories';
-import { Plus, Tags, Trash2, TrendingDown, TrendingUp } from 'lucide-react';
+import { Plus, Tags, Trash2, TrendingDown, TrendingUp, Pencil } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Categories() {
@@ -10,12 +10,15 @@ export default function Categories() {
     data: categories,
     isLoading,
     createCategory,
+    updateCategory,
     deleteCategory,
     isCreating,
+    isUpdating,
   } = useCategories();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [type, setType] = useState<'income' | 'expense'>('expense');
 
@@ -23,13 +26,34 @@ export default function Categories() {
     e.preventDefault();
     if (!user || !name) return;
 
-    await createCategory({
-      user_id: user.id,
-      name,
-      type,
-    });
+    if (editingId) {
+      await updateCategory({
+        id: editingId,
+        updates: { name, type },
+      });
+    } else {
+      await createCategory({
+        user_id: user.id,
+        name,
+        type,
+      });
+    }
 
     setIsFormOpen(false);
+    setEditingId(null);
+    setName('');
+  };
+
+  const openEditForm = (category: any) => {
+    setEditingId(category.id);
+    setName(category.name);
+    setType(category.type);
+    setIsFormOpen(true);
+  };
+
+  const closeForm = () => {
+    setIsFormOpen(false);
+    setEditingId(null);
     setName('');
   };
 
@@ -49,7 +73,15 @@ export default function Categories() {
           </p>
         </div>
         <button
-          onClick={() => setIsFormOpen(!isFormOpen)}
+          onClick={() => {
+            if (isFormOpen) {
+              closeForm();
+            } else {
+              setIsFormOpen(true);
+              setEditingId(null);
+              setName('');
+            }
+          }}
           className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 hover:-translate-y-1 active:translate-y-0 transition-all duration-300"
         >
           <Plus
@@ -62,7 +94,7 @@ export default function Categories() {
       {isFormOpen && (
         <div className="rounded-[2rem] border border-white/50 dark:border-zinc-800/50 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl p-8 shadow-xl animate-in zoom-in-95 duration-300">
           <h2 className="text-2xl font-extrabold mb-6 text-zinc-900 dark:text-zinc-100 bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-orange-500 w-fit">
-            Tạo danh mục mới 🎨
+            {editingId ? 'Chỉnh sửa danh mục ✏️' : 'Tạo danh mục mới 🎨'}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -106,17 +138,17 @@ export default function Categories() {
             <div className="flex justify-end gap-4 mt-6 pt-4">
               <button
                 type="button"
-                onClick={() => setIsFormOpen(false)}
+                onClick={closeForm}
                 className="px-6 py-3 text-sm font-bold text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-2xl transition-all"
               >
                 Hủy
               </button>
               <button
                 type="submit"
-                disabled={isCreating}
+                disabled={isCreating || isUpdating}
                 className="px-6 py-3 text-sm font-bold text-white bg-gradient-to-r from-amber-400 to-orange-500 hover:shadow-lg hover:shadow-amber-500/30 hover:-translate-y-1 active:translate-y-0 rounded-2xl disabled:opacity-50 transition-all"
               >
-                {isCreating ? 'Đang lưu...' : 'Thêm danh mục 🚀'}
+                {isCreating || isUpdating ? 'Đang lưu...' : (editingId ? 'Cập nhật 🚀' : 'Thêm danh mục 🚀')}
               </button>
             </div>
           </form>
@@ -155,15 +187,24 @@ export default function Categories() {
                       {c.name}
                     </span>
                     {c.user_id ? (
-                      <button
-                        onClick={() => setDeleteId(c.id)}
-                        className="p-1.5 ml-1 text-zinc-400 hover:text-white hover:bg-rose-500 rounded-full opacity-0 group-hover:opacity-100 transition-all"
-                        title="Xóa danh mục"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
+                      <div className="flex items-center ml-1 opacity-0 group-hover:opacity-100 transition-all">
+                        <button
+                          onClick={() => openEditForm(c)}
+                          className="p-1.5 text-zinc-400 hover:text-white hover:bg-amber-500 rounded-full transition-all mr-1"
+                          title="Sửa danh mục"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteId(c.id)}
+                          className="p-1.5 text-zinc-400 hover:text-white hover:bg-rose-500 rounded-full transition-all"
+                          title="Xóa danh mục"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     ) : (
-                      <div className="w-6 ml-1"></div> // Placeholder cho alignment
+                      <div className="w-14 ml-1"></div> // Placeholder cho alignment
                     )}
                   </div>
                 ))
@@ -197,15 +238,24 @@ export default function Categories() {
                       {c.name}
                     </span>
                     {c.user_id ? (
-                      <button
-                        onClick={() => setDeleteId(c.id)}
-                        className="p-1.5 ml-1 text-zinc-400 hover:text-white hover:bg-emerald-500 rounded-full opacity-0 group-hover:opacity-100 transition-all"
-                        title="Xóa danh mục"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
+                      <div className="flex items-center ml-1 opacity-0 group-hover:opacity-100 transition-all">
+                        <button
+                          onClick={() => openEditForm(c)}
+                          className="p-1.5 text-zinc-400 hover:text-white hover:bg-amber-500 rounded-full transition-all mr-1"
+                          title="Sửa danh mục"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setDeleteId(c.id)}
+                          className="p-1.5 text-zinc-400 hover:text-white hover:bg-emerald-500 rounded-full transition-all"
+                          title="Xóa danh mục"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     ) : (
-                      <div className="w-6 ml-1"></div>
+                      <div className="w-14 ml-1"></div>
                     )}
                   </div>
                 ))
