@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/features/auth/AuthContext';
+import { useFamilyContext } from '../families/FamilyContext';
 import type { Database } from '@/types/database.types';
 
 type Category = Database['public']['Tables']['categories']['Row'];
@@ -8,18 +9,26 @@ type CategoryInsert = Database['public']['Tables']['categories']['Insert'];
 
 export function useCategories() {
   const { user } = useAuth();
+  const { activeFamilyId } = useFamilyContext();
   const queryClient = useQueryClient();
 
   const query = useQuery({
-    queryKey: ['categories', user?.id],
+    queryKey: ['categories', user?.id, activeFamilyId],
     queryFn: async () => {
       if (!user) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase
+      let q = supabase
         .from('categories')
         .select('*')
-        .or(`user_id.eq.${user.id},user_id.is.null`)
         .order('name');
+
+      if (activeFamilyId) {
+        q = q.or(`family_id.eq.${activeFamilyId},and(user_id.is.null,family_id.is.null)`);
+      } else {
+        q = q.or(`user_id.eq.${user.id},user_id.is.null`).is('family_id', null);
+      }
+
+      const { data, error } = await q;
 
       if (error) throw error;
       return data as Category[];
@@ -31,7 +40,7 @@ export function useCategories() {
     mutationFn: async (newCategory: CategoryInsert) => {
       const { data, error } = await supabase
         .from('categories')
-        .insert([newCategory])
+        .insert([{ ...newCategory, family_id: activeFamilyId }])
         .select()
         .single();
       

@@ -1,6 +1,7 @@
 import { ThemeToggle } from '@/components/theme-toggle';
 import { useAuth } from '@/features/auth/AuthContext';
 import { NavLink as Link, Outlet, useNavigate } from 'react-router-dom';
+import { FamilySelector } from './FamilySelector';
 import {
   LayoutDashboard,
   Loader2,
@@ -85,7 +86,7 @@ export function AppLayout() {
         <div className="absolute bottom-[-20%] right-[-10%] w-96 h-96 bg-violet-400/20 dark:bg-violet-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
         {/* Mobile Header */}
-        <header className="flex h-16 items-center justify-between border-b border-zinc-100 dark:border-zinc-800/50 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md px-4 md:hidden z-10">
+        <header className="flex h-16 items-center justify-between border-b border-zinc-100 dark:border-zinc-800/50 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md px-4 md:hidden z-30 relative">
           <div className="flex items-center gap-2">
             <Wallet className="w-6 h-6 text-pink-500" />
             <div className="font-extrabold text-lg text-zinc-900 dark:text-zinc-100">
@@ -93,6 +94,7 @@ export function AppLayout() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <FamilySelector />
             <ThemeToggle />
             <button
               onClick={handleSignOut}
@@ -108,12 +110,13 @@ export function AppLayout() {
           </div>
         </header>
 
-        {/* Topbar for Desktop (Just for ThemeToggle basically) */}
-        <div className="hidden md:flex justify-end p-4 absolute top-0 right-0 z-20">
+        {/* Topbar for Desktop */}
+        <div className="hidden md:flex justify-end items-center gap-4 p-4 md:px-10 z-20">
+          <FamilySelector />
           <ThemeToggle />
         </div>
 
-        <div className="flex-1 overflow-auto p-4 md:p-10 z-10 relative pb-24 md:pb-10">
+        <div className="flex-1 overflow-auto p-4 md:p-10 md:pt-0 z-10 relative pb-24 md:pb-10">
           <Outlet />
         </div>
 

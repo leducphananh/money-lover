@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/features/auth/AuthContext';
+import { useFamilyContext } from '../families/FamilyContext';
 import type { Database } from '@/types/database.types';
 
 
@@ -8,22 +9,31 @@ type TransactionInsert = Database['public']['Tables']['transactions']['Insert'];
 
 export function useTransactions() {
   const { user } = useAuth();
+  const { activeFamilyId } = useFamilyContext();
   const queryClient = useQueryClient();
 
   const query = useQuery({
-    queryKey: ['transactions', user?.id],
+    queryKey: ['transactions', user?.id, activeFamilyId],
     queryFn: async () => {
       if (!user) throw new Error('Not authenticated');
 
-      const { data, error } = await supabase
+      let q = supabase
         .from('transactions')
         .select(`
           *,
-          category:categories(name, color, icon_name)
+          category:categories(name, color, icon_name),
+          profiles:user_id(full_name)
         `)
-        .eq('user_id', user.id)
         .order('date', { ascending: false })
         .order('created_at', { ascending: false });
+
+      if (activeFamilyId) {
+        q = q.eq('family_id', activeFamilyId);
+      } else {
+        q = q.eq('user_id', user.id).is('family_id', null);
+      }
+
+      const { data, error } = await q;
 
       if (error) throw error;
       return data;
@@ -35,7 +45,7 @@ export function useTransactions() {
     mutationFn: async (newTransaction: TransactionInsert) => {
       const { data, error } = await supabase
         .from('transactions')
-        .insert([newTransaction])
+        .insert([{ ...newTransaction, family_id: activeFamilyId }])
         .select()
         .single();
       

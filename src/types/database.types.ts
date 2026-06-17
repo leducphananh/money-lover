@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           color: string | null
           created_at: string
+          family_id: string | null
           icon_name: string | null
           id: string
           name: string
@@ -27,6 +28,7 @@ export type Database = {
         Insert: {
           color?: string | null
           created_at?: string
+          family_id?: string | null
           icon_name?: string | null
           id?: string
           name: string
@@ -36,13 +38,124 @@ export type Database = {
         Update: {
           color?: string | null
           created_at?: string
+          family_id?: string | null
           icon_name?: string | null
           id?: string
           name?: string
           type?: Database["public"]["Enums"]["transaction_type"]
           user_id?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "categories_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      families: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          name?: string
+        }
         Relationships: []
+      }
+      family_invites: {
+        Row: {
+          created_at: string | null
+          email: string
+          family_id: string | null
+          id: string
+          invited_by: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          family_id?: string | null
+          id?: string
+          invited_by?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          family_id?: string | null
+          id?: string
+          invited_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_invites_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "family_invites_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      family_members: {
+        Row: {
+          family_id: string | null
+          id: string
+          joined_at: string | null
+          role: string
+          user_id: string | null
+        }
+        Insert: {
+          family_id?: string | null
+          id?: string
+          joined_at?: string | null
+          role?: string
+          user_id?: string | null
+        }
+        Update: {
+          family_id?: string | null
+          id?: string
+          joined_at?: string | null
+          role?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_members_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "family_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -71,6 +184,7 @@ export type Database = {
           category_id: string
           created_at: string
           date: string
+          family_id: string | null
           id: string
           notes: string | null
           type: Database["public"]["Enums"]["transaction_type"]
@@ -82,6 +196,7 @@ export type Database = {
           category_id: string
           created_at?: string
           date: string
+          family_id?: string | null
           id?: string
           notes?: string | null
           type: Database["public"]["Enums"]["transaction_type"]
@@ -93,6 +208,7 @@ export type Database = {
           category_id?: string
           created_at?: string
           date?: string
+          family_id?: string | null
           id?: string
           notes?: string | null
           type?: Database["public"]["Enums"]["transaction_type"]
@@ -105,6 +221,20 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -249,3 +379,4 @@ export const Constants = {
     },
   },
 } as const
+

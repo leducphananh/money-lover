@@ -1,10 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/features/auth/AuthContext';
+import { FamilyProvider } from '@/features/families/FamilyContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import Login from '@/pages/Login';
 import Dashboard from '@/pages/Dashboard';
 import Transactions from '@/pages/Transactions';
 import Categories from '@/pages/Categories';
+import Families from '@/pages/Families';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { session, isLoading } = useAuth();
@@ -17,7 +19,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" replace />;
   }
   
-  return <>{children}</>;
+  return <FamilyProvider>{children}</FamilyProvider>;
 }
 
 export function App() {
@@ -37,6 +39,7 @@ export function App() {
           <Route index element={<Dashboard />} />
           <Route path="transactions" element={<Transactions />} />
           <Route path="categories" element={<Categories />} />
+          <Route path="families" element={<Families />} />
         </Route>
       </Routes>
     </BrowserRouter>

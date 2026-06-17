@@ -1,4 +1,5 @@
 import { useAuth } from '@/features/auth/AuthContext';
+import { useFamilyContext } from '@/features/families/FamilyContext';
 import { useCategories } from '@/features/categories/useCategories';
 import { useTransactions } from '@/features/transactions/useTransactions';
 import {
@@ -14,6 +15,7 @@ import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
 export default function Transactions() {
   const { user } = useAuth();
+  const { activeFamilyId } = useFamilyContext();
   const {
     data: transactions,
     isLoading,
@@ -241,6 +243,15 @@ export default function Transactions() {
                         <span className="text-sm text-zinc-500 dark:text-zinc-400 truncate max-w-[200px]">
                           {t.notes}
                         </span>
+                      )}
+                      {activeFamilyId && (
+                        <>
+                          <span className="text-zinc-300 dark:text-zinc-700">•</span>
+                          <span className="text-xs font-bold text-violet-500 bg-violet-50 dark:bg-violet-900/30 px-2 py-1 rounded-lg truncate max-w-[120px]">
+                            {/* @ts-ignore */}
+                            {t.profiles?.full_name || 'Thành viên'}
+                          </span>
+                        </>
                       )}
                     </div>
                   </div>
