@@ -1,15 +1,11 @@
 import { ThemeToggle } from '@/components/theme-toggle';
 import { useAuth } from '@/features/auth/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Wallet } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-export const Route = createFileRoute('/login')({
-  component: LoginRoute,
-});
-
-function LoginRoute() {
+export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,7 +17,7 @@ function LoginRoute() {
   // Chuyển hướng khi có session mới
   useEffect(() => {
     if (session) {
-      navigate({ to: '/', replace: true });
+      navigate('/', { replace: true });
     }
   }, [session, navigate]);
 

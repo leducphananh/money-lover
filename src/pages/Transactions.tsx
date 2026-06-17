@@ -1,19 +1,24 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { useTransactions } from '@/features/transactions/useTransactions';
-import { useCategories } from '@/features/categories/useCategories';
-import { useState } from 'react';
 import { useAuth } from '@/features/auth/AuthContext';
-import { Plus, Trash2, ArrowUpRight, ArrowDownRight, Frown } from 'lucide-react';
+import { useCategories } from '@/features/categories/useCategories';
+import { useTransactions } from '@/features/transactions/useTransactions';
+import {
+  ArrowDownRight,
+  ArrowUpRight,
+  Frown,
+  Plus,
+  Trash2,
+} from 'lucide-react';
+import { useState } from 'react';
 
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
-export const Route = createFileRoute('/_authenticated/transactions')({
-  component: TransactionsRoute,
-});
-
-function TransactionsRoute() {
+export default function Transactions() {
   const { user } = useAuth();
-  const { data: transactions, isLoading, deleteTransaction } = useTransactions();
+  const {
+    data: transactions,
+    isLoading,
+    deleteTransaction,
+  } = useTransactions();
   const { data: categories } = useCategories();
   const { createTransaction, isCreating } = useTransactions();
 
@@ -26,7 +31,10 @@ function TransactionsRoute() {
   const [notes, setNotes] = useState('');
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+    }).format(value);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,20 +55,26 @@ function TransactionsRoute() {
     setNotes('');
   };
 
-  const filteredCategories = categories?.filter(c => c.type === type) || [];
+  const filteredCategories = categories?.filter((c) => c.type === type) || [];
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50">Giao dịch</h1>
-          <p className="text-zinc-500 dark:text-zinc-400 font-medium mt-2">Quản lý thu nhập và chi tiêu của bạn 💸</p>
+          <h1 className="text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50">
+            Giao dịch
+          </h1>
+          <p className="text-zinc-500 dark:text-zinc-400 font-medium mt-2">
+            Quản lý thu nhập và chi tiêu của bạn 💸
+          </p>
         </div>
         <button
           onClick={() => setIsFormOpen(!isFormOpen)}
           className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-violet-500/30 hover:shadow-violet-500/50 hover:-translate-y-1 active:translate-y-0 transition-all duration-300"
         >
-          <Plus className={`h-5 w-5 transition-transform duration-300 ${isFormOpen ? 'rotate-45' : ''}`} />
+          <Plus
+            className={`h-5 w-5 transition-transform duration-300 ${isFormOpen ? 'rotate-45' : ''}`}
+          />
           {isFormOpen ? 'Đóng form' : 'Thêm giao dịch'}
         </button>
       </div>
@@ -73,42 +87,58 @@ function TransactionsRoute() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-200 mb-2">Loại giao dịch</label>
+                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-200 mb-2">
+                  Loại giao dịch
+                </label>
                 <div className="flex gap-4 p-1 rounded-2xl bg-zinc-100 dark:bg-zinc-800/50">
                   <button
                     type="button"
-                    onClick={() => { setType('expense'); setCategoryId(''); }}
+                    onClick={() => {
+                      setType('expense');
+                      setCategoryId('');
+                    }}
                     className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold transition-all ${type === 'expense' ? 'bg-white dark:bg-zinc-700 shadow-sm text-rose-500' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
                   >
                     <ArrowDownRight className="w-4 h-4" /> Chi tiêu
                   </button>
                   <button
                     type="button"
-                    onClick={() => { setType('income'); setCategoryId(''); }}
+                    onClick={() => {
+                      setType('income');
+                      setCategoryId('');
+                    }}
                     className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold transition-all ${type === 'income' ? 'bg-white dark:bg-zinc-700 shadow-sm text-emerald-500' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
                   >
                     <ArrowUpRight className="w-4 h-4" /> Thu nhập
                   </button>
                 </div>
               </div>
-              
+
               <div>
-                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-200 mb-2">Danh mục</label>
+                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-200 mb-2">
+                  Danh mục
+                </label>
                 <select
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
                   required
                   className="w-full rounded-2xl border-2 border-transparent bg-zinc-100 dark:bg-zinc-800/50 px-4 py-3.5 text-zinc-900 dark:text-zinc-100 font-medium focus:border-violet-500 focus:bg-white dark:focus:bg-zinc-900 focus:outline-none focus:ring-4 focus:ring-violet-500/20 transition-all cursor-pointer"
                 >
-                  <option value="" disabled>Chọn danh mục</option>
-                  {filteredCategories.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
+                  <option value="" disabled>
+                    Chọn danh mục
+                  </option>
+                  {filteredCategories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-200 mb-2">Số tiền (VNĐ)</label>
+                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-200 mb-2">
+                  Số tiền (VNĐ)
+                </label>
                 <input
                   type="number"
                   min="0"
@@ -122,7 +152,9 @@ function TransactionsRoute() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-200 mb-2">Ngày</label>
+                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-200 mb-2">
+                  Ngày
+                </label>
                 <input
                   type="date"
                   required
@@ -133,7 +165,9 @@ function TransactionsRoute() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-200 mb-2">Ghi chú (Tùy chọn)</label>
+                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-200 mb-2">
+                  Ghi chú (Tùy chọn)
+                </label>
                 <input
                   type="text"
                   value={notes}
@@ -143,7 +177,7 @@ function TransactionsRoute() {
                 />
               </div>
             </div>
-            
+
             <div className="flex justify-end gap-4 mt-6 pt-4">
               <button
                 type="button"
@@ -166,23 +200,33 @@ function TransactionsRoute() {
 
       <div>
         {isLoading ? (
-          <div className="p-12 text-center text-zinc-500 dark:text-zinc-400 font-bold animate-pulse">Đang tải dữ liệu...</div>
+          <div className="p-12 text-center text-zinc-500 dark:text-zinc-400 font-bold animate-pulse">
+            Đang tải dữ liệu...
+          </div>
         ) : transactions?.length === 0 ? (
           <div className="p-16 text-center text-zinc-500 dark:text-zinc-400 flex flex-col items-center">
             <Frown className="w-16 h-16 text-zinc-300 dark:text-zinc-700 mb-4" />
             <p className="font-bold text-lg">Chưa có giao dịch nào.</p>
-            <p className="text-sm mt-1">Hãy thêm giao dịch đầu tiên của bạn nhé!</p>
+            <p className="text-sm mt-1">
+              Hãy thêm giao dịch đầu tiên của bạn nhé!
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
             {transactions?.map((t) => (
-              <div 
-                key={t.id} 
+              <div
+                key={t.id}
                 className="group flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-3xl bg-white/60 dark:bg-zinc-900/60 backdrop-blur-md border border-white/40 dark:border-white/5 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 gap-4"
               >
                 <div className="flex items-center gap-5">
-                  <div className={`p-4 rounded-2xl ${t.type === 'income' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400'}`}>
-                    {t.type === 'income' ? <ArrowUpRight className="w-6 h-6" /> : <ArrowDownRight className="w-6 h-6" />}
+                  <div
+                    className={`p-4 rounded-2xl ${t.type === 'income' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400'}`}
+                  >
+                    {t.type === 'income' ? (
+                      <ArrowUpRight className="w-6 h-6" />
+                    ) : (
+                      <ArrowDownRight className="w-6 h-6" />
+                    )}
                   </div>
                   <div>
                     <div className="font-extrabold text-lg text-zinc-900 dark:text-zinc-100">
@@ -193,14 +237,21 @@ function TransactionsRoute() {
                       <span className="text-xs font-bold px-2 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 rounded-lg">
                         {new Date(t.date).toLocaleDateString('vi-VN')}
                       </span>
-                      {t.notes && <span className="text-sm text-zinc-500 dark:text-zinc-400 truncate max-w-[200px]">{t.notes}</span>}
+                      {t.notes && (
+                        <span className="text-sm text-zinc-500 dark:text-zinc-400 truncate max-w-[200px]">
+                          {t.notes}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between sm:justify-end gap-6 sm:w-auto w-full">
-                  <div className={`font-black text-xl ${t.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}`}>
-                    {t.type === 'income' ? '+' : '-'}{formatCurrency(t.amount)}
+                  <div
+                    className={`font-black text-xl ${t.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}`}
+                  >
+                    {t.type === 'income' ? '+' : '-'}
+                    {formatCurrency(t.amount)}
                   </div>
                   <button
                     onClick={() => setDeleteId(t.id)}

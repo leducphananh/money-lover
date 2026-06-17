@@ -1,5 +1,4 @@
 import { useDashboardStats } from '@/features/dashboard/useDashboardStats';
-import { createFileRoute } from '@tanstack/react-router';
 import {
   Bar,
   BarChart,
@@ -10,11 +9,7 @@ import {
   YAxis,
 } from 'recharts';
 
-export const Route = createFileRoute('/_authenticated/')({
-  component: Dashboard,
-});
-
-function Dashboard() {
+export default function Dashboard() {
   const { data: stats, isLoading, isError } = useDashboardStats();
 
   const formatCurrency = (value: number) => {

@@ -1,17 +1,18 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { useCategories } from '@/features/categories/useCategories';
-import { useState } from 'react';
-import { useAuth } from '@/features/auth/AuthContext';
-import { Plus, Trash2, Tags, TrendingUp, TrendingDown } from 'lucide-react';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { useAuth } from '@/features/auth/AuthContext';
+import { useCategories } from '@/features/categories/useCategories';
+import { Plus, Tags, Trash2, TrendingDown, TrendingUp } from 'lucide-react';
+import { useState } from 'react';
 
-export const Route = createFileRoute('/_authenticated/categories')({
-  component: CategoriesRoute,
-});
-
-function CategoriesRoute() {
+export default function Categories() {
   const { user } = useAuth();
-  const { data: categories, isLoading, createCategory, deleteCategory, isCreating } = useCategories();
+  const {
+    data: categories,
+    isLoading,
+    createCategory,
+    deleteCategory,
+    isCreating,
+  } = useCategories();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -32,21 +33,28 @@ function CategoriesRoute() {
     setName('');
   };
 
-  const incomeCategories = categories?.filter(c => c.type === 'income') || [];
-  const expenseCategories = categories?.filter(c => c.type === 'expense') || [];
+  const incomeCategories = categories?.filter((c) => c.type === 'income') || [];
+  const expenseCategories =
+    categories?.filter((c) => c.type === 'expense') || [];
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50">Danh mục</h1>
-          <p className="text-zinc-500 dark:text-zinc-400 font-medium mt-2">Phân loại các khoản tiền của bạn 🏷️</p>
+          <h1 className="text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50">
+            Danh mục
+          </h1>
+          <p className="text-zinc-500 dark:text-zinc-400 font-medium mt-2">
+            Phân loại các khoản tiền của bạn 🏷️
+          </p>
         </div>
         <button
           onClick={() => setIsFormOpen(!isFormOpen)}
           className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 hover:-translate-y-1 active:translate-y-0 transition-all duration-300"
         >
-          <Plus className={`h-5 w-5 transition-transform duration-300 ${isFormOpen ? 'rotate-45' : ''}`} />
+          <Plus
+            className={`h-5 w-5 transition-transform duration-300 ${isFormOpen ? 'rotate-45' : ''}`}
+          />
           {isFormOpen ? 'Đóng form' : 'Thêm danh mục'}
         </button>
       </div>
@@ -59,7 +67,9 @@ function CategoriesRoute() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-200 mb-2">Thuộc loại nào?</label>
+                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-200 mb-2">
+                  Thuộc loại nào?
+                </label>
                 <div className="flex gap-4 p-1 rounded-2xl bg-zinc-100 dark:bg-zinc-800/50">
                   <button
                     type="button"
@@ -79,7 +89,9 @@ function CategoriesRoute() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-200 mb-2">Tên danh mục</label>
+                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-200 mb-2">
+                  Tên danh mục
+                </label>
                 <input
                   type="text"
                   required
@@ -90,7 +102,7 @@ function CategoriesRoute() {
                 />
               </div>
             </div>
-            
+
             <div className="flex justify-end gap-4 mt-6 pt-4">
               <button
                 type="button"
@@ -112,7 +124,9 @@ function CategoriesRoute() {
       )}
 
       {isLoading ? (
-        <div className="p-12 text-center text-zinc-500 dark:text-zinc-400 font-bold animate-pulse">Đang tải dữ liệu...</div>
+        <div className="p-12 text-center text-zinc-500 dark:text-zinc-400 font-bold animate-pulse">
+          Đang tải dữ liệu...
+        </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Cột Chi tiêu */}
@@ -121,16 +135,25 @@ function CategoriesRoute() {
               <div className="p-2 bg-rose-100 dark:bg-rose-900/50 rounded-xl">
                 <TrendingDown className="w-6 h-6 text-rose-500 dark:text-rose-400" />
               </div>
-              <h2 className="text-2xl font-extrabold text-rose-600 dark:text-rose-400">Chi tiêu</h2>
+              <h2 className="text-2xl font-extrabold text-rose-600 dark:text-rose-400">
+                Chi tiêu
+              </h2>
             </div>
             <div className="flex flex-wrap gap-3">
               {expenseCategories.length === 0 ? (
-                <div className="text-rose-400/70 text-sm font-medium p-4">Chưa có danh mục nào.</div>
+                <div className="text-rose-400/70 text-sm font-medium p-4">
+                  Chưa có danh mục nào.
+                </div>
               ) : (
-                expenseCategories.map(c => (
-                  <div key={c.id} className="group flex items-center gap-2 pl-4 pr-2 py-2 rounded-full bg-white dark:bg-zinc-900 shadow-sm border border-rose-100 dark:border-rose-900/50 hover:shadow-md hover:border-rose-300 dark:hover:border-rose-700 transition-all">
+                expenseCategories.map((c) => (
+                  <div
+                    key={c.id}
+                    className="group flex items-center gap-2 pl-4 pr-2 py-2 rounded-full bg-white dark:bg-zinc-900 shadow-sm border border-rose-100 dark:border-rose-900/50 hover:shadow-md hover:border-rose-300 dark:hover:border-rose-700 transition-all"
+                  >
                     <Tags className="w-4 h-4 text-rose-400" />
-                    <span className="font-bold text-zinc-700 dark:text-zinc-200">{c.name}</span>
+                    <span className="font-bold text-zinc-700 dark:text-zinc-200">
+                      {c.name}
+                    </span>
                     {c.user_id ? (
                       <button
                         onClick={() => setDeleteId(c.id)}
@@ -154,16 +177,25 @@ function CategoriesRoute() {
               <div className="p-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl">
                 <TrendingUp className="w-6 h-6 text-emerald-500 dark:text-emerald-400" />
               </div>
-              <h2 className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">Thu nhập</h2>
+              <h2 className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
+                Thu nhập
+              </h2>
             </div>
             <div className="flex flex-wrap gap-3">
               {incomeCategories.length === 0 ? (
-                <div className="text-emerald-400/70 text-sm font-medium p-4">Chưa có danh mục nào.</div>
+                <div className="text-emerald-400/70 text-sm font-medium p-4">
+                  Chưa có danh mục nào.
+                </div>
               ) : (
-                incomeCategories.map(c => (
-                  <div key={c.id} className="group flex items-center gap-2 pl-4 pr-2 py-2 rounded-full bg-white dark:bg-zinc-900 shadow-sm border border-emerald-100 dark:border-emerald-900/50 hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 transition-all">
+                incomeCategories.map((c) => (
+                  <div
+                    key={c.id}
+                    className="group flex items-center gap-2 pl-4 pr-2 py-2 rounded-full bg-white dark:bg-zinc-900 shadow-sm border border-emerald-100 dark:border-emerald-900/50 hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 transition-all"
+                  >
                     <Tags className="w-4 h-4 text-emerald-400" />
-                    <span className="font-bold text-zinc-700 dark:text-zinc-200">{c.name}</span>
+                    <span className="font-bold text-zinc-700 dark:text-zinc-200">
+                      {c.name}
+                    </span>
                     {c.user_id ? (
                       <button
                         onClick={() => setDeleteId(c.id)}

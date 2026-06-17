@@ -1,6 +1,6 @@
 import { ThemeToggle } from '@/components/theme-toggle';
 import { useAuth } from '@/features/auth/AuthContext';
-import { Link, Outlet, useNavigate } from '@tanstack/react-router';
+import { NavLink as Link, Outlet, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Loader2,
@@ -19,7 +19,7 @@ export function AppLayout() {
   const handleSignOut = async () => {
     setIsLoggingOut(true);
     await signOut();
-    navigate({ to: '/login', replace: true });
+    navigate('/login', { replace: true });
   };
 
   return (
@@ -113,9 +113,34 @@ export function AppLayout() {
           <ThemeToggle />
         </div>
 
-        <div className="flex-1 overflow-auto p-4 md:p-10 z-10 relative">
+        <div className="flex-1 overflow-auto p-4 md:p-10 z-10 relative pb-24 md:pb-10">
           <Outlet />
         </div>
+
+        {/* Mobile Bottom Navigation */}
+        <nav className="md:hidden absolute bottom-0 left-0 w-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-t border-zinc-100 dark:border-zinc-800/50 p-2 px-4 z-20 flex items-center justify-between pb-safe">
+          <Link
+            to="/"
+            className="flex flex-col items-center gap-1 p-2 rounded-xl text-zinc-500 dark:text-zinc-400 [&.active]:text-pink-600 dark:[&.active]:text-fuchsia-400 transition-colors flex-1"
+          >
+            <LayoutDashboard className="h-6 w-6" />
+            <span className="text-[10px] font-bold">Tổng quan</span>
+          </Link>
+          <Link
+            to="/transactions"
+            className="flex flex-col items-center gap-1 p-2 rounded-xl text-zinc-500 dark:text-zinc-400 [&.active]:text-violet-600 dark:[&.active]:text-violet-400 transition-colors flex-1"
+          >
+            <Receipt className="h-6 w-6" />
+            <span className="text-[10px] font-bold">Giao dịch</span>
+          </Link>
+          <Link
+            to="/categories"
+            className="flex flex-col items-center gap-1 p-2 rounded-xl text-zinc-500 dark:text-zinc-400 [&.active]:text-amber-600 dark:[&.active]:text-amber-400 transition-colors flex-1"
+          >
+            <Tags className="h-6 w-6" />
+            <span className="text-[10px] font-bold">Danh mục</span>
+          </Link>
+        </nav>
       </main>
     </div>
   );
