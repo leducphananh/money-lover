@@ -416,23 +416,23 @@ export default function Transactions() {
                       <ArrowDownRight className="w-6 h-6" />
                     )}
                   </div>
-                  <div>
-                    <div className="font-extrabold text-lg text-zinc-900 dark:text-zinc-100">
+                  <div className="min-w-0 flex-1">
+                    <div className="font-extrabold text-lg text-zinc-900 dark:text-zinc-100 truncate">
                       {/* @ts-ignore */}
                       {t.category?.name || 'Không xác định'}
                     </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs font-bold px-2 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 rounded-lg">
+                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                      <span className="text-xs font-bold px-2 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 rounded-lg whitespace-nowrap">
                         {new Date(t.date).toLocaleDateString('vi-VN')}
                       </span>
                       {t.notes && (
-                        <span className="text-sm text-zinc-500 dark:text-zinc-400 truncate max-w-[200px]">
+                        <span className="text-sm text-zinc-500 dark:text-zinc-400 truncate max-w-[150px] sm:max-w-[200px]">
                           {t.notes}
                         </span>
                       )}
                       {activeFamilyId && (
                         <>
-                          <span className="text-zinc-300 dark:text-zinc-700">
+                          <span className="text-zinc-300 dark:text-zinc-700 hidden sm:inline">
                             •
                           </span>
                           <span className="text-xs font-bold text-violet-500 bg-violet-50 dark:bg-violet-900/30 px-2 py-1 rounded-lg truncate max-w-[120px]">
@@ -445,15 +445,15 @@ export default function Transactions() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-4 sm:w-auto w-full">
+                <div className="flex items-center justify-between sm:justify-end gap-4 sm:w-auto w-full mt-2 sm:mt-0 pt-4 sm:pt-0 border-t border-zinc-100 dark:border-white/5 sm:border-0">
                   <div
-                    className={`font-black text-xl ${t.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}`}
+                    className={`font-black text-xl ${t.type === 'income' ? 'text-emerald-500' : 'text-rose-500'} truncate`}
                   >
                     {t.type === 'income' ? '+' : '-'}
                     {formatCurrency(t.amount)}
                   </div>
                   {t.user_id && (
-                    <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all">
+                    <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all flex-shrink-0">
                       <button
                         onClick={() => openEditForm(t)}
                         className="p-3 text-zinc-300 hover:text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/30 rounded-xl transition-all"
