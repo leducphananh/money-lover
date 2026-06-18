@@ -1,16 +1,17 @@
 import { useAuth } from '@/features/auth/AuthContext';
-import { useFamilyContext } from '@/features/families/FamilyContext';
 import { useCategories } from '@/features/categories/useCategories';
+import { useFamilyContext } from '@/features/families/FamilyContext';
 import { useTransactions } from '@/features/transactions/useTransactions';
 import {
   ArrowDownRight,
   ArrowUpRight,
+  Filter,
   Frown,
+  Pencil,
   Plus,
   Trash2,
-  Pencil,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
@@ -23,7 +24,8 @@ export default function Transactions() {
     deleteTransaction,
   } = useTransactions();
   const { data: categories } = useCategories();
-  const { createTransaction, updateTransaction, isCreating, isUpdating } = useTransactions();
+  const { createTransaction, updateTransaction, isCreating, isUpdating } =
+    useTransactions();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -33,6 +35,13 @@ export default function Transactions() {
   const [categoryId, setCategoryId] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState('');
+
+  // Filter States
+  const [filterStartDate, setFilterStartDate] = useState('');
+  const [filterEndDate, setFilterEndDate] = useState('');
+  const [filterType, setFilterType] = useState<string>('all');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [filterUser, setFilterUser] = useState<string>('all');
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -101,6 +110,42 @@ export default function Transactions() {
       }
     }
   }, [type, categories, categoryId]);
+
+  // Derived Filter Options
+  const uniqueUsers = useMemo(() => {
+    if (!transactions) return [];
+    return Array.from(
+      new Map(
+        transactions
+          .filter((t) => t.user_id && t.profiles)
+          .map((t) => [t.user_id, (t.profiles as any).full_name]),
+      ).entries(),
+    );
+  }, [transactions]);
+
+  const filterableCategories =
+    categories?.filter((c) => filterType === 'all' || c.type === filterType) ||
+    [];
+
+  // Derived Filtered List
+  const filteredTransactionsList = useMemo(() => {
+    return transactions?.filter((t) => {
+      if (filterType !== 'all' && t.type !== filterType) return false;
+      if (filterCategory !== 'all' && t.category_id !== filterCategory)
+        return false;
+      if (filterUser !== 'all' && t.user_id !== filterUser) return false;
+      if (filterStartDate && t.date < filterStartDate) return false;
+      if (filterEndDate && t.date > filterEndDate) return false;
+      return true;
+    });
+  }, [
+    transactions,
+    filterType,
+    filterCategory,
+    filterUser,
+    filterStartDate,
+    filterEndDate,
+  ]);
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -246,29 +291,117 @@ export default function Transactions() {
                 disabled={isCreating || isUpdating}
                 className="px-6 py-3 text-sm font-bold text-white bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:shadow-lg hover:shadow-violet-500/30 hover:-translate-y-1 active:translate-y-0 rounded-2xl disabled:opacity-50 transition-all"
               >
-                {isCreating || isUpdating ? 'Đang lưu...' : (editingId ? 'Cập nhật 🚀' : 'Lưu giao dịch 🚀')}
+                {isCreating || isUpdating
+                  ? 'Đang lưu...'
+                  : editingId
+                    ? 'Cập nhật 🚀'
+                    : 'Lưu giao dịch 🚀'}
               </button>
             </div>
           </form>
         </div>
       )}
 
+      {/* Filter Bar */}
+      <div className="bg-white/60 dark:bg-zinc-900/60 backdrop-blur-md border border-white/50 dark:border-zinc-800/50 p-5 rounded-3xl shadow-sm space-y-4">
+        <div className="flex items-center gap-2 mb-2 text-zinc-700 dark:text-zinc-200 font-extrabold">
+          <Filter className="w-5 h-5 text-violet-500" /> Bộ lọc
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          <div>
+            <label className="block text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider">
+              Từ ngày
+            </label>
+            <input
+              type="date"
+              value={filterStartDate}
+              onChange={(e) => setFilterStartDate(e.target.value)}
+              className="w-full rounded-xl border border-transparent bg-zinc-100 dark:bg-zinc-800/50 px-3 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-all cursor-pointer"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider">
+              Đến ngày
+            </label>
+            <input
+              type="date"
+              value={filterEndDate}
+              onChange={(e) => setFilterEndDate(e.target.value)}
+              className="w-full rounded-xl border border-transparent bg-zinc-100 dark:bg-zinc-800/50 px-3 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-all cursor-pointer"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider">
+              Loại
+            </label>
+            <select
+              value={filterType}
+              onChange={(e) => {
+                setFilterType(e.target.value);
+                setFilterCategory('all');
+              }}
+              className="w-full rounded-xl border border-transparent bg-zinc-100 dark:bg-zinc-800/50 px-3 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-all cursor-pointer"
+            >
+              <option value="all">Tất cả</option>
+              <option value="expense">Chi tiêu</option>
+              <option value="income">Thu nhập</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider">
+              Danh mục
+            </label>
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="w-full rounded-xl border border-transparent bg-zinc-100 dark:bg-zinc-800/50 px-3 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-all cursor-pointer"
+            >
+              <option value="all">Tất cả</option>
+              {filterableCategories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          {activeFamilyId && (
+            <div>
+              <label className="block text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-1.5 uppercase tracking-wider">
+                Người tạo
+              </label>
+              <select
+                value={filterUser}
+                onChange={(e) => setFilterUser(e.target.value)}
+                className="w-full rounded-xl border border-transparent bg-zinc-100 dark:bg-zinc-800/50 px-3 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-all cursor-pointer"
+              >
+                <option value="all">Tất cả</option>
+                {uniqueUsers.map(([id, name]) => (
+                  <option key={id} value={id}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+      </div>
+
       <div>
         {isLoading ? (
           <div className="p-12 text-center text-zinc-500 dark:text-zinc-400 font-bold animate-pulse">
             Đang tải dữ liệu...
           </div>
-        ) : transactions?.length === 0 ? (
+        ) : filteredTransactionsList?.length === 0 ? (
           <div className="p-16 text-center text-zinc-500 dark:text-zinc-400 flex flex-col items-center">
             <Frown className="w-16 h-16 text-zinc-300 dark:text-zinc-700 mb-4" />
             <p className="font-bold text-lg">Chưa có giao dịch nào.</p>
             <p className="text-sm mt-1">
-              Hãy thêm giao dịch đầu tiên của bạn nhé!
+              Hãy thử thay đổi bộ lọc hoặc thêm giao dịch mới nhé!
             </p>
           </div>
         ) : (
           <div className="space-y-4">
-            {transactions?.map((t) => (
+            {filteredTransactionsList?.map((t) => (
               <div
                 key={t.id}
                 className="group flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-3xl bg-white/60 dark:bg-zinc-900/60 backdrop-blur-md border border-white/40 dark:border-white/5 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 gap-4"
@@ -299,7 +432,9 @@ export default function Transactions() {
                       )}
                       {activeFamilyId && (
                         <>
-                          <span className="text-zinc-300 dark:text-zinc-700">•</span>
+                          <span className="text-zinc-300 dark:text-zinc-700">
+                            •
+                          </span>
                           <span className="text-xs font-bold text-violet-500 bg-violet-50 dark:bg-violet-900/30 px-2 py-1 rounded-lg truncate max-w-[120px]">
                             {/* @ts-ignore */}
                             {t.profiles?.full_name || 'Thành viên'}
